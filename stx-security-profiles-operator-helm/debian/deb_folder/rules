@@ -1,0 +1,69 @@
+#!/usr/bin/make -f
+# export DH_VERBOSE = 1
+
+export ROOT = debian/tmp
+export APP_FOLDER = $(ROOT)/usr/local/share/applications/helm
+
+export DEB_VERSION = $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
+export MAJOR = $(shell echo $(DEB_VERSION) | cut -f 1 -d '.')
+export MINOR_PATCH = $(shell echo $(DEB_VERSION) | cut -f 2 -d '.')
+
+export SPO_PKG="helm-charts-security-profiles-operator-0.5.0.tgz"
+export APP_NAME = security-profiles-operator
+export APP_VERSION = $(MAJOR).$(MINOR_PATCH)
+export APP_TARBALL_FLUXCD = $(APP_NAME)-$(APP_VERSION).tgz
+export HELM_REPO = stx-platform
+export STAGING = staging
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	# Host a server for the helm charts.
+	chartmuseum --debug --port=8879 --context-path='/charts' --storage="local" --storage-local-rootdir="." &
+	sleep 2
+	helm repo add local http://localhost:8879/charts
+
+	# Extract the security-profiles-operator chart
+	rm -rf fluxcd
+	mkdir -p fluxcd
+	tar -C fluxcd -xf $(SPO_PKG)
+
+	# Build the charts
+	cd fluxcd/helm-charts/ && export HELM=helm
+
+	# Terminate the helm chart server.
+	pkill chartmuseum
+
+	# Setup the staging directory.
+	mkdir -p $(STAGING)/charts
+
+	# Copy the fluxcd manifests
+	cp -R fluxcd-manifests/ $(STAGING)/
+
+	# Copy the built chart to staging
+	cp $(SPO_PKG) $(STAGING)/charts/
+
+	# Populate metadata.
+	cp files/metadata.yaml $(STAGING)
+	sed -i 's/@APP_NAME@/$(APP_NAME)/g' $(STAGING)/metadata.yaml
+	sed -i 's/@APP_VERSION@/$(APP_VERSION)/g' $(STAGING)/metadata.yaml
+	sed -i 's/@HELM_REPO@/$(HELM_REPO)/g' $(STAGING)/metadata.yaml
+
+	# Generate checksum file and package the tarball
+	cd $(STAGING) && find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
+	tar -zcf $(APP_TARBALL_FLUXCD) -C $(STAGING)/ .
+
+	cp -rf $(STAGING) fluxcd-manifests/
+
+	# Cleanup staging
+	rm -rf $(STAGING)
+
+override_dh_auto_install:
+	# Install the app tar file.
+	install -d -m 755 $(APP_FOLDER)
+	install -p -D -m 755 $(APP_TARBALL_FLUXCD) $(APP_FOLDER)
+
+override_dh_auto_test:
+
+override_dh_usrlocal:

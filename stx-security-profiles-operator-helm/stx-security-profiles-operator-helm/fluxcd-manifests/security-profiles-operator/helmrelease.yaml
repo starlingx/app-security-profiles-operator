@@ -1,0 +1,36 @@
+#
+# Copyright (c) 2022 Wind River Systems, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+apiVersion: "helm.toolkit.fluxcd.io/v2beta1"
+kind: HelmRelease
+metadata:
+  name: stx-security-profiles-operator
+  labels:
+    chart_group: stx-security-profiles-operator-charts
+spec:
+  releaseName: security-profiles-operator
+  chart:
+    spec:
+      chart: security-profiles-operator
+      version: 0.0.7
+      sourceRef:
+        kind: HelmRepository
+        name: stx-platform
+  interval: 5m
+  timeout: 30m
+  test:
+    enable: false
+  install:
+    disableHooks: false
+  upgrade:
+    disableHooks: false
+  valuesFrom:
+    - kind: Secret
+      name: spo-static-overrides
+      valuesKey: spo-static-overrides.yaml
+    - kind: Secret
+      name: spo-system-overrides
+      valuesKey: spo-system-overrides.yaml
