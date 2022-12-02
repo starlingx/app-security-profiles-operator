@@ -8,7 +8,7 @@ export DEB_VERSION = $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 
 export MAJOR = $(shell echo $(DEB_VERSION) | cut -f 1 -d '.')
 export MINOR_PATCH = $(shell echo $(DEB_VERSION) | cut -f 2 -d '.')
 
-export SPO_PKG="helm-charts-security-profiles-operator-0.5.0.tgz"
+export SPO_PKG="helm-charts-security-profiles-operator-0.6.0.tgz"
 export APP_NAME = security-profiles-operator
 export APP_VERSION = $(MAJOR).$(MINOR_PATCH)
 export APP_TARBALL_FLUXCD = $(APP_NAME)-$(APP_VERSION).tgz
@@ -29,8 +29,13 @@ override_dh_auto_build:
 	mkdir -p fluxcd
 	tar -C fluxcd -xf $(SPO_PKG)
 
-	# Build the charts
-	cd fluxcd/helm-charts/ && export HELM=helm
+	# Apply patches
+	cd fluxcd/helm-charts/ && patch --no-backup-if-mismatch --fuzz=0 -p1 < ../../files/0001-remove-namespace-creation.patch
+	cd fluxcd/helm-charts/ && patch --no-backup-if-mismatch --fuzz=0 -p1 < ../../files/0002-add-images.patch
+
+	# create a tgz file
+	cd fluxcd && mkdir -p output/ && mv helm-charts security-profiles-operator &&tar -czvf output/$(SPO_PKG) security-profiles-operator/
+	
 
 	# Terminate the helm chart server.
 	pkill chartmuseum
@@ -42,7 +47,7 @@ override_dh_auto_build:
 	cp -R fluxcd-manifests/ $(STAGING)/
 
 	# Copy the built chart to staging
-	cp $(SPO_PKG) $(STAGING)/charts/
+	cp fluxcd/output/$(SPO_PKG) $(STAGING)/charts/
 
 	# Populate metadata.
 	cp files/metadata.yaml $(STAGING)
@@ -50,11 +55,13 @@ override_dh_auto_build:
 	sed -i 's/@APP_VERSION@/$(APP_VERSION)/g' $(STAGING)/metadata.yaml
 	sed -i 's/@HELM_REPO@/$(HELM_REPO)/g' $(STAGING)/metadata.yaml
 
+	# Copy the plugins: installed in the buildroot
+	mkdir -p $(STAGING)/plugins
+	cp /plugins/$(APP_NAME)/*.whl $(STAGING)/plugins
+
 	# Generate checksum file and package the tarball
 	cd $(STAGING) && find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
 	tar -zcf $(APP_TARBALL_FLUXCD) -C $(STAGING)/ .
-
-	cp -rf $(STAGING) fluxcd-manifests/
 
 	# Cleanup staging
 	rm -rf $(STAGING)

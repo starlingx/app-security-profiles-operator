@@ -5,7 +5,9 @@ Maintainer: StarlingX Developers <starlingx-discuss@lists.starlingx.io>
 Build-Depends: debhelper-compat (= 13),
  chartmuseum,
  helm,
- procps
+ procps,
+ python3-k8sapp-security-profiles-operator,
+ python3-k8sapp-security-profiles-operator-wheels
 Standards-Version: 4.5.1
 Homepage: https://www.starlingx.io
 
@@ -14,5 +16,4 @@ Section: libs
 Architecture: any
 Depends: ${misc:Depends}
 Description: StarlingX Security Profiles Operator Application FluxCD Helm Charts
- This package contains Fluxcd helm charts for the nginx ingress
- controller application.
+ This package contains Fluxcd helm charts for the security profiles operator application.
