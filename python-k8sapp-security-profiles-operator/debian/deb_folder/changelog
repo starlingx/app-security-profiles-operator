@@ -1,0 +1,5 @@
+python3-k8sapp-security-profiles-operator (1.0-1) unstable; urgency=medium
+
+  * Initial release.
+
+ --  Sirin Shaikh <sirin.shaikh@windriver.com>  Mon 14 Nov 2022 02:26:18 PM EST
