@@ -1,0 +1,21 @@
+From: Rahul Roshan Kachchap <rahulroshan.kachchap@windriver.com>
+Date: Wed, 14 Dev 2022 03:55:02 -0500
+Subject: [PATCH] config-apparmor
+
+Signed-off-by: Rahul Roshan Kachchap <rahulroshan.kachchap@windriver.com>
+
+--- a/values.yaml
++++ b/values.yaml
+@@ -1,6 +1,10 @@
+ # Default values for security-profiles-operator.
+ replicaCount: 3
+
++enableSelinux: false
++enableLogEnricher: false
++enableAppArmor: true
++
+ nameOverride: ""
+ fullnameOverride: ""
+
+--
+2.25.1

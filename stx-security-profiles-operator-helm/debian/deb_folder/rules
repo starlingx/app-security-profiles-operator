@@ -32,6 +32,8 @@ override_dh_auto_build:
 	# Apply patches
 	cd fluxcd/helm-charts/ && patch --no-backup-if-mismatch --fuzz=0 -p1 < ../../files/0001-remove-namespace-creation.patch
 	cd fluxcd/helm-charts/ && patch --no-backup-if-mismatch --fuzz=0 -p1 < ../../files/0002-add-images.patch
+	cd fluxcd/helm-charts/ && patch --no-backup-if-mismatch --fuzz=0 -p1 < ../../files/0003-config-apparmor.patch
+	cd fluxcd/helm-charts/ && cp ../../files/config.yaml templates/config.yaml
 
 	# create a tgz file
 	cd fluxcd && mkdir -p output/ && mv helm-charts security-profiles-operator &&tar -czvf output/$(SPO_PKG) security-profiles-operator/
