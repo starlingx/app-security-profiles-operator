@@ -4,18 +4,24 @@ Subject: [PATCH] config-apparmor
 
 Signed-off-by: Rahul Roshan Kachchap <rahulroshan.kachchap@windriver.com>
 
+---
+values.yaml | 4 ++++
+1 file changed, 4 insertions(+)
+
+diff --git a/values.yaml b/values.yaml
+index f80a78b3..49942e33 100644
 --- a/values.yaml
 +++ b/values.yaml
-@@ -1,6 +1,10 @@
- # Default values for security-profiles-operator.
- replicaCount: 3
+@@ -4,6 +4,10 @@ replicaCount: 3
+ nameOverride: ""
+ fullnameOverride: ""
 
 +enableSelinux: false
 +enableLogEnricher: false
 +enableAppArmor: true
 +
- nameOverride: ""
- fullnameOverride: ""
-
+ serviceAccount:
+   # Specifies whether a service account should be created
+   create: true
 --
 2.25.1

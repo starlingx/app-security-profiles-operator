@@ -9,20 +9,20 @@ templates/static-resources.yaml | 3 +++
 1 file changed, 3 insertions(+)
 
 diff --git a/values.yaml b/values.yaml
-index f80a78b..4159d91 100644
+index f80a78b3..33162a0f 100644
 --- a/values.yaml
 +++ b/values.yaml
-@@ -13,6 +13,10 @@ serviceAccount:
-   # If not set and create is true, a name is generated using the fullname template
-   name: ""
- 
-+Images:
-+  # image
-+  security-profiles-operator: gcr.io/k8s-staging-sp-operator/security-profiles-operator:latest
+@@ -1,6 +1,11 @@
+ # Default values for security-profiles-operator.
+ replicaCount: 3
+
 +
- podAnnotations: {}
- 
- podSecurityContext: {}
++image:
++  repository: registry.k8s.io/security-profiles-operator/security-profiles-operator
++  tag: v0.6.0
++
+ nameOverride: ""
+ fullnameOverride: ""
+
 --
 2.25.1
-

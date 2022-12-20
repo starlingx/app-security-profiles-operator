@@ -5,5 +5,5 @@
 #
 
 image:
-  repository: gcr.io/k8s-staging-sp-operator/security-profiles-operator
-  tag: latest
+  repository: registry.k8s.io/security-profiles-operator/security-profiles-operator
+  tag: v0.6.0
