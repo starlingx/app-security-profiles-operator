@@ -17,6 +17,7 @@ from sysinv.common import exception
 from sysinv.common import kubernetes
 from sysinv.common import utils as cutils
 from sysinv.helm import lifecycle_base as base
+from sysinv.helm.lifecycle_hook import LifecycleHookInfo
 from sysinv.helm.lifecycle_constants import LifecycleConstants
 
 LOG = logging.getLogger(__name__)
@@ -82,6 +83,14 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         cmd = ['sed', '-i', '/security-profiles-operator.yaml/s/^/#/g', kust_file]
         stdout, stderr = cutils.trycmd(*cmd)
         LOG.debug("{} app: cmd={} stdout={} stderr={}".format(app.name, cmd, stdout, stderr))
+
+        # remove seccomp profiles before app deletion. This is a workaround for SPO known issue
+        LOG.debug("deleting seccomp profiles")
+        cmd = ['kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
+               'delete', 'seccompprofiles', '--all', '--all-namespaces']
+
+        stdout,stderr = cutils.trycmd(*cmd)
+        LOG.info("{} app: cmd={} stdout={} stderr={}".format(app.name, cmd, stdout, stderr))
 
     def post_remove(self, app):
         LOG.debug(
