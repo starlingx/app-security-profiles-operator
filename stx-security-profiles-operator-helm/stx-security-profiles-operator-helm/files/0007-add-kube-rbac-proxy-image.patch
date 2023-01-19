@@ -1,0 +1,41 @@
+From 6248172c6804d14103dfd31ca8a8e6d1079cdab2 Mon Sep 17 00:00:00 2001
+From: Harshad Sonde <harshad.sonde@windriver.com>
+Date: Mon, 23 Jan 2023 00:31:47 -0500
+Subject: [PATCH 1/1] added rbacrepo image tag
+
+Signed-off-by: Harshad Sonde <harshad.sonde@windriver.com>
+---
+ templates/deployment.yaml | 2 +-
+ values.yaml               | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/templates/deployment.yaml b/templates/deployment.yaml
+index 2312f98f..f5e2506a 100644
+--- a/templates/deployment.yaml
++++ b/templates/deployment.yaml
+@@ -27,7 +27,7 @@ spec:
+         - manager
+         env:
+         - name: RELATED_IMAGE_RBAC_PROXY
+-          value: quay.io/brancz/kube-rbac-proxy:v0.13.1
++          value: {{ .Values.images.rbac }}
+         - name: RELATED_IMAGE_SELINUXD
+           value: quay.io/security-profiles-operator/selinuxd
+         - name: OPERATOR_NAMESPACE
+diff --git a/values.yaml b/values.yaml
+index f80a78b3..b10f384b 100644
+--- a/values.yaml
++++ b/values.yaml
+@@ -25,6 +25,9 @@ resources:
+     cpu: 250m
+     memory: 50Mi
+
++images:
++  rbac: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
++
+ autoscaling:
+   enabled: false
+   minReplicas: 1
+--
+2.25.1
+
