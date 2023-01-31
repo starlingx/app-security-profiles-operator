@@ -9,4 +9,6 @@ dl_files:
     md5sum: 3a24e30d9cf7995ebcf3c036a836ce89
 revision:
   dist: $STX_DIST
-  PKG_GITREVCOUNT: true
+  GITREVCOUNT:
+    SRC_DIR: ${MY_REPO}/stx/app-security-profiles-operator
+    BASE_SRCREV: 76d1915efa382c4b731e0e1921f737aef81d9916
