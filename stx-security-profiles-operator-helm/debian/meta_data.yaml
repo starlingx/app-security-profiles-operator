@@ -11,4 +11,4 @@ revision:
   dist: $STX_DIST
   GITREVCOUNT:
     SRC_DIR: ${MY_REPO}/stx/app-security-profiles-operator
-    BASE_SRCREV: 1e3b82ce2ce645c487a3bfbbd1339fe676a83d23
+    BASE_SRCREV: 32549bdb48d02195f1ee7ad4eb930167dda6e436
