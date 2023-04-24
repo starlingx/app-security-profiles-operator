@@ -12,3 +12,5 @@ HELM_NS_SECURITY_PROFILES_OPERATOR = 'security-profiles-operator'
 
 # Chart name
 HELM_CHART_SECURITY_PROFILES_OPERATOR = 'security-profiles-operator'
+
+HELM_COMPONENT_LABEL_SPO = 'app.starlingx.io/component'
