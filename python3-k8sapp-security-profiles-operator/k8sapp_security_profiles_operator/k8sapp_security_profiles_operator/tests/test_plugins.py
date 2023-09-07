@@ -5,7 +5,6 @@
 #
 
 from k8sapp_security_profiles_operator.common import constants as app_constants
-from sysinv.tests.helm.test_helm import HelmOperatorTestSuiteMixin
 
 from sysinv.tests.db import base as dbbase
 
@@ -26,7 +25,6 @@ class K8SAppSecurityProfilesOperatorAppMixin(object):
 class K8SAppSecurityProfilesOperatorControllerTestCase(K8SAppSecurityProfilesOperatorAppMixin,
                                          dbbase.BaseIPv6Mixin,
                                          dbbase.BaseCephStorageBackendMixin,
-                                         HelmOperatorTestSuiteMixin,
                                          dbbase.ControllerHostTestCase):
     pass
 
@@ -38,6 +36,5 @@ class K8SAppSecurityProfilesOperatorControllerTestCase(K8SAppSecurityProfilesOpe
 # - security-profiles-operator app
 class K8SAppSecurityProfilesOperatorAIOTestCase(K8SAppSecurityProfilesOperatorAppMixin,
                                   dbbase.BaseCephStorageBackendMixin,
-                                  HelmOperatorTestSuiteMixin,
                                   dbbase.AIOSimplexHostTestCase):
     pass
