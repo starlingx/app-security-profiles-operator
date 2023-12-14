@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Wind River Systems, Inc.
+# Copyright (c) 2023 Wind River Systems, Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -23,9 +23,9 @@ class K8SAppSecurityProfilesOperatorAppMixin(object):
 # - Ceph Storage
 # - security-profiles-operator app
 class K8SAppSecurityProfilesOperatorControllerTestCase(K8SAppSecurityProfilesOperatorAppMixin,
-                                         dbbase.BaseIPv6Mixin,
-                                         dbbase.BaseCephStorageBackendMixin,
-                                         dbbase.ControllerHostTestCase):
+                                                       dbbase.BaseIPv6Mixin,
+                                                       dbbase.BaseCephStorageBackendMixin,
+                                                       dbbase.ControllerHostTestCase):
     pass
 
 
@@ -35,6 +35,6 @@ class K8SAppSecurityProfilesOperatorControllerTestCase(K8SAppSecurityProfilesOpe
 # - Ceph Storage
 # - security-profiles-operator app
 class K8SAppSecurityProfilesOperatorAIOTestCase(K8SAppSecurityProfilesOperatorAppMixin,
-                                  dbbase.BaseCephStorageBackendMixin,
-                                  dbbase.AIOSimplexHostTestCase):
+                                                dbbase.BaseCephStorageBackendMixin,
+                                                dbbase.AIOSimplexHostTestCase):
     pass

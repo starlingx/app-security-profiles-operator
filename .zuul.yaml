@@ -3,17 +3,100 @@
     check:
       jobs:
         - openstack-tox-linters
+        - k8sapp-security-profile-operator-py39
+        - k8sapp-security-profile-operator-pylint
+        - k8sapp-security-profile-operator-flake8
+        - k8sapp-security-profile-operator-metadata
     gate:
       jobs:
         - openstack-tox-linters
+        - k8sapp-security-profile-operator-py39
+        - k8sapp-security-profile-operator-pylint
+        - k8sapp-security-profile-operator-flake8
+        - k8sapp-security-profile-operator-metadata
     post:
       jobs:
         - stx-security-profiles-operator-app-upload-git-mirror
 
 - job:
+    name: k8sapp-security-profile-operator-py39
+    parent: openstack-tox-py39
+    description: |
+            Run py39 test for k8sapp_security_profiles_operator
+    nodeset: debian-bullseye
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/update
+      - starlingx/utilities
+      - starlingx/root
+    files:
+      - python3-k8sapp-security-profiles-operator/*
+    vars:
+      tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/upper-constraints.txt'
+
+- job:
+    name: k8sapp-security-profile-operator-metadata
+    parent: tox
+    description: |
+            Run metadata test for k8sapp_security_profiles_operator
+    nodeset: debian-bullseye
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/update
+      - starlingx/utilities
+      - starlingx/root
+    files:
+      - python3-k8sapp-security-profiles-operator/*
+    vars:
+      tox_envlist: metadata
+      tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/upper-constraints.txt'
+
+- job:
+    name: k8sapp-security-profile-operator-pylint
+    parent: tox
+    description: |
+            Run pylint test for k8sapp_security_profiles_operator
+    nodeset: debian-bullseye
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/update
+      - starlingx/utilities
+      - starlingx/root
+    files:
+      - python3-k8sapp-security-profiles-operator/*
+    vars:
+      tox_envlist: pylint
+      tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/upper-constraints.txt'
+
+- job:
+    name: k8sapp-security-profile-operator-flake8
+    parent: tox
+    description: |
+            Run flake8 test for k8sapp_security_profiles_operator
+    nodeset: debian-bullseye
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/update
+      - starlingx/utilities
+      - starlingx/root
+    files:
+      - python3-k8sapp-security-profiles-operator/*
+    vars:
+      tox_envlist: flake8
+      tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/upper-constraints.txt'
+
+- job:
     name: stx-security-profiles-operator-app-upload-git-mirror
     parent: upload-git-mirror
-    description: > 
+    description: >
       Mirrors opendev.org/starlingx/app-security-profiles-operator to
       github.com/starlingx/app-security-profiles-operator
     vars:

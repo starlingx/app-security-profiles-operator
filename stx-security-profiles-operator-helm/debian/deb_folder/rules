@@ -41,7 +41,7 @@ override_dh_auto_build:
 
 	# create a tgz file
 	cd fluxcd && mkdir -p output/ && mv helm-charts security-profiles-operator &&tar -czvf output/$(SPO_PKG) security-profiles-operator/
-	
+
 
 	# Terminate the helm chart server.
 	pkill chartmuseum
@@ -57,9 +57,9 @@ override_dh_auto_build:
 
 	# Populate metadata.
 	cp files/metadata.yaml $(STAGING)
-	sed -i 's/@APP_NAME@/$(APP_NAME)/g' $(STAGING)/metadata.yaml
-	sed -i 's/@APP_VERSION@/$(APP_VERSION)/g' $(STAGING)/metadata.yaml
-	sed -i 's/@HELM_REPO@/$(HELM_REPO)/g' $(STAGING)/metadata.yaml
+	sed -i 's/APP_REPLACE_NAME/$(APP_NAME)/g' $(STAGING)/metadata.yaml
+	sed -i 's/APP_REPLACE_VERSION/$(APP_VERSION)/g' $(STAGING)/metadata.yaml
+	sed -i 's/HELM_REPLACE_REPO/$(HELM_REPO)/g' $(STAGING)/metadata.yaml
 
 	# Copy the plugins: installed in the buildroot
 	mkdir -p $(STAGING)/plugins

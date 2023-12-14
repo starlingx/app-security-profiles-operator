@@ -17,7 +17,6 @@ from sysinv.common import exception
 from sysinv.common import kubernetes
 from sysinv.common import utils as cutils
 from sysinv.helm import lifecycle_base as base
-from sysinv.helm.lifecycle_hook import LifecycleHookInfo
 from sysinv.helm.lifecycle_constants import LifecycleConstants
 import yaml
 
@@ -133,7 +132,7 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         cmd = ['kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
                'delete', 'seccompprofiles', '--all', '--all-namespaces']
 
-        stdout,stderr = cutils.trycmd(*cmd)
+        stdout, stderr = cutils.trycmd(*cmd)
         LOG.info("{} app: cmd={} stdout={} stderr={}".format(app.name, cmd, stdout, stderr))
 
     def post_remove(self, app):

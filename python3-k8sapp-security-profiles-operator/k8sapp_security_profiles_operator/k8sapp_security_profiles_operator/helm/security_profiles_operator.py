@@ -12,6 +12,7 @@ from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
+
 class SecurityProfilesOperatorHelm(base.BaseHelm):
     """Class to encapsulate helm operations for the security-profiles-operator chart"""
 
