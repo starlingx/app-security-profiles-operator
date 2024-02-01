@@ -48,8 +48,6 @@
       - starlingx/update
       - starlingx/utilities
       - starlingx/root
-    files:
-      - python3-k8sapp-security-profiles-operator/*
     vars:
       tox_envlist: metadata
       tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
