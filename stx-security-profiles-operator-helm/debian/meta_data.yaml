@@ -1,12 +1,7 @@
 ---
 debname: stx-security-profiles-operator-helm
-debver: 1.0-1
+debver: 1.0-2
 src_path: stx-security-profiles-operator-helm
-dl_files:
-  helm-charts-security-profiles-operator-0.6.0.tgz:
-    topdir: helm-charts
-    url: https://github.com/kubernetes-sigs/security-profiles-operator/releases/download/v0.6.0/security-profiles-operator-0.6.0.tgz
-    md5sum: 3a24e30d9cf7995ebcf3c036a836ce89
 revision:
   dist: $STX_DIST
   GITREVCOUNT:

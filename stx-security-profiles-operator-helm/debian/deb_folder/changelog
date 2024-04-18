@@ -1,3 +1,9 @@
+stx-security-profiles-operator-helm (1.0-2) unstable; urgency=medium
+
+  * Update package to automatically version itself.
+
+ --  Rahul Roshan <rahulroshan.kachchap@windriver.com>  Thu, 18 Apr 2024 02:13:14 +0000
+
 stx-security-profiles-operator-helm (1.0-1) unstable; urgency=medium
 
   * Initial release.

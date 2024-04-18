@@ -1,9 +1,9 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: stx-security-profiles-operator-helm
+Upstream-Name: security-profiles-operator-helm
 Source: https://opendev.org/starlingx/app-security-profiles-operator/
 
 Files: *
-Copyright: (c) 2013-2024 Wind River Systems, Inc
+Copyright: (c) 2024 Wind River Systems, Inc
 License: Apache-2
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
