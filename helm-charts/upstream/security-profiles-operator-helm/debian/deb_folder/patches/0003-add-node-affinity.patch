@@ -1,18 +1,18 @@
-From 2e0d4bf57ee889f9bb7db729c0d8bc56a84b1747 Mon Sep 17 00:00:00 2001
-From: hsonde <harshad.sonde@windriver.com>
-Date: Tue, 3 Jan 2023 06:05:32 -0500
-Subject: [PATCH 1/1] add node affinity terms for SPO
+From 326945c31427d2df3dfacf36262f43fbb4230335 Mon Sep 17 00:00:00 2001
+From: Sabyasachi Nayak <sabyasachi.nayak@windriver.com>
+Date: Thu, 30 May 2024 11:56:57 -0400
+Subject: [PATCH] add node affinity terms for SPO
 
-Signed-off-by: hsonde <harshad.sonde@windriver.com>
+Signed-off-by: Sabyasachi Nayak <sabyasachi.nayak@windriver.com>
 ---
  templates/deployment.yaml | 9 ++++++---
  1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/templates/deployment.yaml b/templates/deployment.yaml
-index 2a9b7fb3..9f804d80 100644
+index 26ee0ad..8959a76 100644
 --- a/templates/deployment.yaml
 +++ b/templates/deployment.yaml
-@@ -46,10 +46,13 @@ spec:
+@@ -55,10 +55,13 @@ spec:
        nodeSelector:
          {{- toYaml . | nindent 8 }}
        {{- end }}
@@ -26,9 +26,8 @@ index 2a9b7fb3..9f804d80 100644
 +            - matchExpressions:
 +              - key: node-role.kubernetes.io/control-plane
 +                operator: Exists
-       serviceAccountName: security-profiles-operator
        tolerations:
        - effect: NoSchedule
+         key: node-role.kubernetes.io/master
 --
 2.25.1
-

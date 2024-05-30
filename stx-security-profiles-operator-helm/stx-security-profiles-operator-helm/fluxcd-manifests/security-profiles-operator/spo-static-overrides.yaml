@@ -6,7 +6,7 @@
 
 image:
   repository: registry.k8s.io/security-profiles-operator/security-profiles-operator
-  tag: v0.6.0
+  tag: v0.8.3
 
 images:
-  rbac: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
+  rbac: gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0

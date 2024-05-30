@@ -1,0 +1,26 @@
+From b84b35b5e75c38577af4e60b3d9c71110df23fc9 Mon Sep 17 00:00:00 2001
+From: Sabyasachi Nayak <sabyasachi.nayak@windriver.com>
+Date: Thu, 30 May 2024 12:58:03 -0400
+Subject: [PATCH] config apparmor
+
+Signed-off-by: Sabyasachi Nayak <sabyasachi.nayak@windriver.com>
+---
+ values.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/values.yaml b/values.yaml
+index 6e1c66d..381c8b2 100644
+--- a/values.yaml
++++ b/values.yaml
+@@ -12,7 +12,7 @@ spoImage:
+ 
+ enableSelinux: false
+ enableLogEnricher: false
+-enableAppArmor: false
++enableAppArmor: true
+ enableBpfRecorder: false
+ enableProfiling: false
+ verbosity: 0
+-- 
+2.25.1
+

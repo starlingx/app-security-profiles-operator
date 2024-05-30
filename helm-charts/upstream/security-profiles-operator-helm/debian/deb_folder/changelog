@@ -1,5 +1,11 @@
+security-profiles-operator-helm (0.8-6) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Sabyasachi Nayak <sabyasachi.nayak@windriver.com> Wed, 29 May 2024 11:30:00 +0000
+
 security-profiles-operator-helm (0.6-7) unstable; urgency=medium
 
   * Initial release.
 
- --  Rahul Roshan  <rahulroshan.kachchap@windriver.com>  Thu, 18 Apr 2024 02:13:14 +0000
+ -- Rahul Roshan <rahulroshan.kachchap@windriver.com> Thu, 18 Apr 2024 02:13:14 +0000
