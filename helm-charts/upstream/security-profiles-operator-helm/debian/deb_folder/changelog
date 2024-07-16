@@ -1,3 +1,9 @@
+security-profiles-operator-helm (0.8-7) unstable; urgency=medium
+
+  * Internal change.
+
+ -- Sabyasachi Nayak <sabyasachi.nayak@windriver.com> Wed, 29 May 2024 11:30:00 +0000
+
 security-profiles-operator-helm (0.8-6) unstable; urgency=medium
 
   * New upstream release.

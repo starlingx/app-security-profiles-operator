@@ -1,6 +1,6 @@
 ---
 debname: security-profiles-operator-helm
-debver: 0.8-6
+debver: 0.8-7
 dl_path:
   name: security-profiles-operator-0.8.3.tgz
   url: https://github.com/kubernetes-sigs/security-profiles-operator/releases/download/v0.8.3/security-profiles-operator-0.8.3.tgz
@@ -9,7 +9,7 @@ src_files:
   - security-profiles-operator-helm/files/Makefile
 revision:
   dist: $STX_DIST
-  stx_patch: 2
+  stx_patch: 3
   GITREVCOUNT:
     SRC_DIR: ${MY_REPO}/stx/app-security-profiles-operator/helm-charts/upstream/security-profiles-operator-helm
     BASE_SRCREV: 0920df52515e00144155b3a99719370695ce4586
