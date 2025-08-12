@@ -1,8 +1,8 @@
 BUILDER=script
 LABEL=security-profiles-operator
 SOURCE_REPO=https://github.com/kubernetes-sigs/security-profiles-operator.git
-SOURCE_REF=v0.9.0
-SOURCE_PATCHES="../files/0001-skip-processing-of-faulty-app-armor-profile.patch"
+SOURCE_REF=v0.8.3
+SOURCE_PATCHES="../files/0001-fix-critical-cves.patch"
 COMMAND=bash
 SCRIPT=build-spo-image.sh
 ARGS=security-profiles-operator
