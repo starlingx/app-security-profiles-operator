@@ -42,8 +42,8 @@ index 1167291..3225d30 100644
 -  registry: gcr.io
 -  repository: k8s-staging-sp-operator/security-profiles-operator
 -  tag: latest
-+  repository: registry.k8s.io/security-profiles-operator/security-profiles-operator
-+  tag: v0.8.3
++  repository: registry.local:9001/docker.io/starlingx/security-profiles-operator
++  tag: stx.11.0-v0.8.3-1
 
  enableSelinux: false
  enableLogEnricher: false
