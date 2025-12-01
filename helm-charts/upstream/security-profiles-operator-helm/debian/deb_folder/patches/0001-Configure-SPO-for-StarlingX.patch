@@ -1,0 +1,137 @@
+From 93f4527740a7b7e4fd4ded2294c572f8cea7b4b9 Mon Sep 17 00:00:00 2001
+From: Test User <test@example.com>
+Date: Mon, 1 Dec 2025 16:28:41 -0400
+Subject: [PATCH] Configure SPO for StarlingX
+
+---
+ templates/_helpers.tpl    |  2 --
+ templates/deployment.yaml | 58 ++++++++++++++++-----------------------
+ values.yaml               |  7 ++---
+ 3 files changed, 27 insertions(+), 40 deletions(-)
+
+diff --git a/templates/_helpers.tpl b/templates/_helpers.tpl
+index ee6dbdc..7bf3a99 100644
+--- a/templates/_helpers.tpl
++++ b/templates/_helpers.tpl
+@@ -55,8 +55,6 @@ Selector labels
+ {{- define "security-profiles-operator.selectorLabels" -}}
+ app: security-profiles-operator
+ name: security-profiles-operator
+-app.kubernetes.io/name: {{ include "security-profiles-operator.name" . }}
+-app.kubernetes.io/instance: {{ include "security-profiles-operator.name" . }}
+ {{- end }}
+ 
+ {{/*
+diff --git a/templates/deployment.yaml b/templates/deployment.yaml
+index b03cc9d..bf5c841 100644
+--- a/templates/deployment.yaml
++++ b/templates/deployment.yaml
+@@ -1,24 +1,18 @@
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+-  labels:
+-    {{- include "security-profiles-operator.labels" . | nindent 4 }}
++  labels:{{include "security-profiles-operator.labels" . | nindent 4}}
+   name: security-profiles-operator
+-  namespace: {{ .Release.Namespace }}
+-spec:
+-  {{- if not .Values.autoscaling.enabled }}
+-  replicas: {{ .Values.replicaCount }}
+-  {{- end }}
++  namespace: {{.Release.Namespace}}
++spec:{{if not .Values.autoscaling.enabled}}
++  replicas: {{.Values.replicaCount}}{{end}}
+   selector:
+-    matchLabels:
+-      {{- include "security-profiles-operator.selectorLabels" . | nindent 6 }}
++    matchLabels:{{include "security-profiles-operator.selectorLabels" . | nindent 6}}
+   template:
+     metadata:
+       annotations:
+-        seccomp.security.alpha.kubernetes.io/pod: runtime/default
+-        {{- include "security-profiles-operator.annotations" . | nindent 8 }}
+-      labels:
+-        {{- include "security-profiles-operator.selectorLabels" . | nindent 8 }}
++        seccomp.security.alpha.kubernetes.io/pod: runtime/default{{include "security-profiles-operator.annotations" . | nindent 8}}
++      labels:{{include "security-profiles-operator.selectorLabels" . | nindent 8}}
+     spec:
+       containers:
+       - args:
+@@ -36,27 +30,24 @@ spec:
+           valueFrom:
+             fieldRef:
+               fieldPath: metadata.namespace
+-        image: {{ .Values.spoImage.registry }}/{{ .Values.spoImage.repository }}:{{ .Values.spoImage.tag }}
++        image: {{.Values.spoImage.repository}}:{{.Values.spoImage.tag}}
+         imagePullPolicy: Always
+-        name: {{ .Chart.Name }}
+-        resources:
+-          {{- toYaml .Values.resources | nindent 10 }}
++        name: {{.Chart.Name}}
++        resources:{{toYaml .Values.resources | nindent 10}}
+         securityContext:
+           allowPrivilegeEscalation: false
+-          readOnlyRootFilesystem: true
+-      {{- with .Values.podSecurityContext }}
+-      securityContext:
+-      {{- toYaml . | nindent 8 }}
+-      {{- end }}
+-      serviceAccountName: security-profiles-operator
+-      {{- with .Values.nodeSelector }}
+-      nodeSelector:
+-        {{- toYaml . | nindent 8 }}
+-      {{- end }}
+-      {{- with .Values.affinity }}
++          readOnlyRootFilesystem: true{{with .Values.podSecurityContext}}
++      securityContext:{{toYaml . | nindent 8}}{{end}}
++      serviceAccountName: security-profiles-operator{{with .Values.nodeSelector}}
++      nodeSelector:{{toYaml . | nindent 8}}{{end}}
+       affinity:
+-        {{- toYaml . | nindent 8 }}
+-      {{- end }}
++        nodeAffinity:
++          requiredDuringSchedulingIgnoredDuringExecution:
++            nodeSelectorTerms:
++            - matchExpressions:
++              - key: node-role.kubernetes.io/control-plane
++                operator: Exists
++
+       tolerations:
+       - effect: NoSchedule
+         key: node-role.kubernetes.io/master
+@@ -66,7 +57,6 @@ spec:
+         operator: Exists
+       - effect: NoExecute
+         key: node.kubernetes.io/not-ready
+-        operator: Exists
+-      {{- with .Values.tolerations }}
+-        {{- toYaml . | nindent 6 }}
+-      {{- end }}
++        operator: Exists{{with .Values.tolerations}}{{toYaml . | nindent 6}}{{end}}
++      imagePullSecrets:
++      - name: default-registry-key
+diff --git a/values.yaml b/values.yaml
+index 1167291..5ae660f 100644
+--- a/values.yaml
++++ b/values.yaml
+@@ -2,13 +2,12 @@
+ replicaCount: 3
+ 
+ spoImage:
+-  registry: gcr.io
+-  repository: k8s-staging-sp-operator/security-profiles-operator
+-  tag: latest
++  repository: docker.io/starlingx/security-profiles-operator
++  tag: stx.12.0-v0.8.3-1
+ 
+ enableSelinux: false
+ enableLogEnricher: false
+-enableAppArmor: false
++enableAppArmor: true
+ enableBpfRecorder: false
+ enableProfiling: false
+ verbosity: 0
+-- 
+2.49.0
+
