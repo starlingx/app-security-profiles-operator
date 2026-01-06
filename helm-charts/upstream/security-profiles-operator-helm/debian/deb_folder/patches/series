@@ -1,4 +1,0 @@
-0001-configure-spo-image.patch
-0002-config-apparmor.patch
-0003-add-node-affinity.patch
-0004-removing-the-selector-matchlabels-to-unblock-upgrade.patch
