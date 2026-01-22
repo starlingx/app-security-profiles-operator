@@ -3,6 +3,7 @@ debname: stx-security-profiles-operator-helm
 debver: 1.0-2
 src_path: stx-security-profiles-operator-helm
 revision:
+  stx_patch: 0
   dist: $STX_DIST
   GITREVCOUNT:
     SRC_DIR: ${MY_REPO}/stx/app-security-profiles-operator
