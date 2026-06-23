@@ -1,3 +1,9 @@
+security-profiles-operator-helm (1.0-1) unstable; urgency=medium
+
+  * New upstream release 1.0-1
+
+ -- cchavesd <CaioRodrigo.ChavesdosSantos@windriver.com>  Tue, 23 Jun 2026 21:20:03 +0000
+
 security-profiles-operator-helm (0.8-7) unstable; urgency=medium
 
   * Internal change.

@@ -1,10 +1,10 @@
 ---
 debname: security-profiles-operator-helm
-debver: 0.8-7
+debver: 1.0-1
 dl_path:
-  name: security-profiles-operator-0.8.3.tgz
-  url: https://github.com/kubernetes-sigs/security-profiles-operator/releases/download/v0.8.3/security-profiles-operator-0.8.3.tgz
-  sha256sum: 983afac18956c32659de9aef0dd2a86007a8ae265c7d506dab2390065ae8249a
+  name: security-profiles-operator-1.0.0.tgz
+  url: https://github.com/kubernetes-sigs/security-profiles-operator/archive/refs/tags/v1.0.0.tar.gz
+  sha256sum: c3437b26f0412e2857cdd4c91a872fc3fc3dfcfaf9be06d6d98083e7cead825f
 src_files:
   - security-profiles-operator-helm/files/Makefile
 revision:

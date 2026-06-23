@@ -1,3 +1,9 @@
+stx-security-profiles-operator-helm (1.0-3) unstable; urgency=medium
+
+  * New upstream release 1.0-3
+
+ -- cchavesd <CaioRodrigo.ChavesdosSantos@windriver.com>  Tue, 23 Jun 2026 21:20:03 +0000
+
 stx-security-profiles-operator-helm (1.0-2) unstable; urgency=medium
 
   * Update package to automatically version itself.

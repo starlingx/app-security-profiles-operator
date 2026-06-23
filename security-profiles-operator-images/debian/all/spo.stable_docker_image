@@ -1,8 +1,8 @@
 BUILDER=script
 LABEL=security-profiles-operator
 SOURCE_REPO=https://github.com/kubernetes-sigs/security-profiles-operator.git
-SOURCE_REF=v0.8.3
-SOURCE_PATCHES="../../files/0001-fix-critical-cves.patch"
+SOURCE_REF=v1.0.0
+SOURCE_PATCHES=../../files/0001-Fix-Go-stdlib-CVEs-by-bumping-toolchain-to-1.26.3.patch
 COMMAND=bash
 SCRIPT=build-spo-image.sh
 ARGS=security-profiles-operator

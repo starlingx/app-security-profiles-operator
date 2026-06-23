@@ -1,6 +1,6 @@
 ---
 debname: stx-security-profiles-operator-helm
-debver: 1.0-2
+debver: 1.0-3
 src_path: stx-security-profiles-operator-helm
 revision:
   stx_patch: 0

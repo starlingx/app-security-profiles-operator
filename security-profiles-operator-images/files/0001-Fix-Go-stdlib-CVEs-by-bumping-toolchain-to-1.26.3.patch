@@ -1,0 +1,87 @@
+From b39d111da1bcab2c6ed53450b27b33ac3f133e10 Mon Sep 17 00:00:00 2001
+From: Caio Rodrigo Chaves dos Santos
+ <CaioRodrigo.ChavesdosSantos@windriver.com>
+Date: Fri, 26 Jun 2026 15:07:18 -0400
+Subject: [PATCH] Fix Go stdlib and dependency CVEs
+
+Update flake.lock to a nixpkgs revision containing Go 1.26.3,
+add toolchain directive, bump sigstore/rekor to v1.5.2, and
+run go mod tidy/vendor before build.
+
+Fixes multiple high-severity CVEs in Go stdlib 1.26.0:
+- CVE-2026-33810 (crypto/x509)
+- CVE-2026-42499 (net/mail)
+- CVE-2026-39836 (net)
+- CVE-2026-39820 (net/mail)
+- CVE-2026-33814 (net/http)
+- CVE-2026-33811 (net)
+- CVE-2026-32283 (crypto/tls)
+- CVE-2026-32281 (crypto/x509)
+- CVE-2026-32280 (crypto/x509)
+- CVE-2026-27137 (crypto/x509)
+- CVE-2026-25679 (net/url)
+
+Fixes dependency CVE:
+- CVE-2026-48702 (github.com/sigstore/rekor)
+
+Signed-off-by: Caio Rodrigo Chaves dos Santos <CaioRodrigo.ChavesdosSantos@windriver.com>
+---
+ Makefile   | 6 ++++++
+ flake.lock | 6 +++---
+ go.mod     | 1 +
+ 3 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 2097275..2d4a42c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -163,9 +163,15 @@ define go-build-spo
+ endef
+ 
+ $(BUILD_DIR)/$(PROJECT): $(BUILD_DIR) $(BUILD_FILES)
++	GOPROXY=https://proxy.golang.org,direct go get github.com/sigstore/rekor@v1.5.2
++	GOPROXY=https://proxy.golang.org,direct go mod tidy
++	GOPROXY=https://proxy.golang.org,direct go mod vendor
+ 	$(call go-build-spo,$(PROJECT))
+ 
+ $(BUILD_DIR)/$(CLI_BINARY): $(BUILD_DIR) $(BUILD_FILES)
++	GOPROXY=https://proxy.golang.org,direct go get github.com/sigstore/rekor@v1.5.2
++	GOPROXY=https://proxy.golang.org,direct go mod tidy
++	GOPROXY=https://proxy.golang.org,direct go mod vendor
+ 	$(call go-build-spo,$(CLI_BINARY))
+ 
+ .PHONY: clean
+diff --git a/flake.lock b/flake.lock
+index 2449058..6f1cb13 100644
+--- a/flake.lock
++++ b/flake.lock
+@@ -2,11 +2,11 @@
+   "nodes": {
+     "nixpkgs": {
+       "locked": {
+-        "lastModified": 1772542754,
+-        "narHash": "sha256-WGV2hy+VIeQsYXpsLjdr4GvHv5eECMISX1zKLTedhdg=",
++        "lastModified": 1782175435,
++        "narHash": "sha256-EMzXKmnOtBQ2MnvpiNOm7E+kOMvdPrIKaeg52Tip2Uk=",
+         "owner": "nixos",
+         "repo": "nixpkgs",
+-        "rev": "8c809a146a140c5c8806f13399592dbcb1bb5dc4",
++        "rev": "89570f24e97e614aa34aa9ab1c927b6578a43775",
+         "type": "github"
+       },
+       "original": {
+diff --git a/go.mod b/go.mod
+index 4afb246..6059f79 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,6 +1,7 @@
+ module sigs.k8s.io/security-profiles-operator
+ 
+ go 1.26.0
++toolchain go1.26.3
+ 
+ require (
+ 	dario.cat/mergo v1.0.2
+-- 
+2.54.0
+

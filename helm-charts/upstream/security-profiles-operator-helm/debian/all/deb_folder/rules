@@ -13,11 +13,17 @@ export APP_FOLDER = $(ROOT)/usr/lib/helm
 	dh $@
 
 override_dh_auto_build:
-	# Move security-profiles-operator source
-	mkdir -p security-profiles-operator
-	mv $(shell ls -1 | egrep -v 'Makefile|debian' | tr '\n' ' ') security-profiles-operator
+	# Image tag substitution
+	$(eval OS_CODENAME ?= $(shell lsb_release -cs))
+	find . -name 'values.yaml' -exec \
+            sed -i -e 's|@OS_CODENAME@|$(OS_CODENAME)|g' {} +
 
-        #Copy config.yaml to templates
+	# Extract helm chart from deploy/helm/ subdirectory of upstream source
+	mkdir -p security-profiles-operator
+	mv deploy/helm/* security-profiles-operator/
+	rm -rf deploy
+
+	#Copy config.yaml to templates
 	cp debian/patches/config.yaml security-profiles-operator/templates
 
 	# Create the TGZ file.
