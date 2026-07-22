@@ -7,8 +7,8 @@ Signed-off-by: Test User <test@example.com>
 ---
  deploy/helm/templates/_helpers.tpl    |  2 --
  deploy/helm/templates/deployment.yaml | 66 +++++++++++++++++----------------------
- deploy/helm/values.yaml               | 14 ++++++---
- 3 files changed, 37 insertions(+), 45 deletions(-)
+ deploy/helm/values.yaml               | 10 +++---
+ 3 files changed, 33 insertions(+), 45 deletions(-)
 
 diff --git a/deploy/helm/templates/_helpers.tpl b/deploy/helm/templates/_helpers.tpl
 index ee6dbdc..7bf3a99 100644
@@ -130,7 +130,7 @@ diff --git a/deploy/helm/values.yaml b/deploy/helm/values.yaml
 index 6833e49..e9bbae7 100644
 --- a/deploy/helm/values.yaml
 +++ b/deploy/helm/values.yaml
-@@ -1,10 +1,14 @@
+@@ -1,10 +1,10 @@
  # Default values for security-profiles-operator.
  replicaCount: 3
  
@@ -141,15 +141,11 @@ index 6833e49..e9bbae7 100644
 +spo:
 +  image:
 +    repository: docker.io/starlingx/security-profiles-operator
-+    tag: stx.13.0-v1.0.0-1-@OS_CODENAME@
-+krp:
-+  image:
-+    repository: quay.io/brancz/kube-rbac-proxy
-+    tag: v0.22.0
++    tag: stx.13.0-v1.0.0-2-@OS_CODENAME@
  
  selinuxdImage:
    default:
-@@ -27,7 +31,7 @@ selinuxdImage:
+@@ -27,7 +27,7 @@ selinuxdImage:
  enableSelinux: false
  enableLogEnricher: false
  enableJsonEnricher: false
