@@ -141,7 +141,7 @@ index 6833e49..e9bbae7 100644
 +spo:
 +  image:
 +    repository: docker.io/starlingx/security-profiles-operator
-+    tag: stx.13.0-v1.0.0-2-@OS_CODENAME@
++    tag: stx.13.0-v1.0.0-3-@OS_CODENAME@
  
  selinuxdImage:
    default:
