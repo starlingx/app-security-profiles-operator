@@ -87,9 +87,6 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         # Handle CRD upgrade if old incompatible CRDs exist
         self._upgrade_crds_if_needed(app)
 
-        # Delete webhook deployment so the operator recreates it with the correct image
-        self._delete_webhook_deployment()
-
     def pre_downgrade(self, app_op, app, hook_info):
         """Prepare for downgrade by cleaning up CRDs, webhooks, and helm state.
 
@@ -125,6 +122,7 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         try:
             if incompatibility == 'rollback':
                 self._cleanup_for_rollback()
+            self._delete_webhook_deployment()
             self._delete_old_crds()
             self._apply_new_crds(crds_file)
         finally:
@@ -136,7 +134,7 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         cmd = [
             'kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
             'get', 'crd',
-            'securityprofilesoperatordaemons.security-profiles-operator.x-k8s.io',
+            'apparmorprofiles.security-profiles-operator.x-k8s.io',
             '-o', 'jsonpath={.spec.versions[*].name},{.spec.scope}'
         ]
         try:

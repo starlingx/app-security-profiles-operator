@@ -1,3 +1,10 @@
+python3-k8sapp-security-profiles-operator (1.0-2) unstable; urgency=medium
+
+  * Add lifecycle hooks for CRD incompatibility handling and rollback support
+    during 26.03 to 26.10 upgrade.
+
+ -- Caio Santos <CaioRodrigo.ChavesdosSantos@windriver.com>  Tue 12 Aug 2026 09:00:00 AM EDT
+
 python3-k8sapp-security-profiles-operator (1.0-1) unstable; urgency=medium
 
   * Initial release.
