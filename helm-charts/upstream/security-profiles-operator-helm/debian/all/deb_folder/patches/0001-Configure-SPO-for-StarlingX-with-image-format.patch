@@ -3,12 +3,13 @@ From: Test User <test@example.com>
 Date: Tue, 23 Jun 2026 17:19:32 -0400
 Subject: [PATCH] Configure SPO for StarlingX with image format
 
-Signed-off-by: Test User <test@example.com>
+Signed-off-by: cchavesd <CaioRodrigo.ChavesdosSantos@windriver.com>
 ---
- deploy/helm/templates/_helpers.tpl    |  2 --
- deploy/helm/templates/deployment.yaml | 66 +++++++++++++++++----------------------
- deploy/helm/values.yaml               | 10 +++---
- 3 files changed, 33 insertions(+), 45 deletions(-)
+ deploy/helm/templates/_helpers.tpl          |  2 --
+ deploy/helm/templates/deployment.yaml       | 66 +++++++++++++++++----------------------
+ deploy/helm/templates/static-resources.yaml |  2 ++
+ deploy/helm/values.yaml                     | 10 +++---
+ 4 files changed, 35 insertions(+), 45 deletions(-)
 
 diff --git a/deploy/helm/templates/_helpers.tpl b/deploy/helm/templates/_helpers.tpl
 index ee6dbdc..7bf3a99 100644
@@ -141,7 +142,7 @@ index 6833e49..e9bbae7 100644
 +spo:
 +  image:
 +    repository: docker.io/starlingx/security-profiles-operator
-+    tag: stx.13.0-v1.0.0-2-@OS_CODENAME@
++    tag: stx.13.0-v1.0.0-4-@OS_CODENAME@
  
  selinuxdImage:
    default:
@@ -154,5 +155,18 @@ index 6833e49..e9bbae7 100644
  enableBpfRecorder: false
  enableProfiling: false
  verbosity: 0
+diff --git a/deploy/helm/templates/static-resources.yaml b/deploy/helm/templates/static-resources.yaml
+index c64fcef..7354254 100644
+--- a/deploy/helm/templates/static-resources.yaml
++++ b/deploy/helm/templates/static-resources.yaml
+@@ -1089,6 +1089,8 @@ data:
+           - /var/run/secrets/metrics/**
+           - /sys/module/apparmor/parameters/enabled
+           - /sys/devices/system/cpu/possible
++          - /usr/share/apparmor-features/**
++          - /usr/share/apparmor/**
+           readWritePaths:
+           - "ptrace (read),  # ugly template injection hack"
+           - /var/run/grpc/metrics.sock
 -- 
 2.54.0

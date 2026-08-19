@@ -9,7 +9,7 @@ src_files:
   - security-profiles-operator-helm/files/Makefile
 revision:
   dist: $STX_DIST
-  stx_patch: 3
+  stx_patch: 4
   GITREVCOUNT:
     SRC_DIR: ${MY_REPO}/stx/app-security-profiles-operator/helm-charts/upstream/security-profiles-operator-helm
     BASE_SRCREV: 0920df52515e00144155b3a99719370695ce4586

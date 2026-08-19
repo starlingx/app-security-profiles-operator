@@ -1,0 +1,38 @@
+From a727e336ececda69e7f67efb0a9c3eee86b5fe77 Mon Sep 17 00:00:00 2001
+From: cchavesd <CaioRodrigo.ChavesdosSantos@windriver.com>
+Date: Fri, 21 Aug 2026 08:59:24 -0400
+Subject: [PATCH] Fix AppArmor profile template for container runtime
+ compatibility
+
+Add a signal rule to the crd2armor template so that container
+runtimes (containerd/runc) can properly send SIGTERM/SIGKILL for
+pod termination.
+
+On AppArmor 4.x (Debian Trixie), signal permissions are not
+implicitly granted even with the attach_disconnected flag. Without
+an explicit signal rule, pods using SPO-generated AppArmor profiles
+get stuck in Terminating state because runc cannot signal the
+container init process.
+
+Signed-off-by: cchavesd <CaioRodrigo.ChavesdosSantos@windriver.com>
+---
+ internal/pkg/daemon/apparmorprofile/crd2armor/crd2armor.go | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/internal/pkg/daemon/apparmorprofile/crd2armor/crd2armor.go b/internal/pkg/daemon/apparmorprofile/crd2armor/crd2armor.go
+index e22f95d..c859fb9 100644
+--- a/internal/pkg/daemon/apparmorprofile/crd2armor/crd2armor.go
++++ b/internal/pkg/daemon/apparmorprofile/crd2armor/crd2armor.go
+@@ -81,6 +81,9 @@ profile {{.Name}} flags=({{.ProfileMode}},attach_disconnected,mediate_deleted) {
+   umount,
+   {{end}}
+ 
++  # Allow container runtime to signal processes for pod lifecycle management
++  signal,
++
+   # Raw rules placeholder
+ 
+   # Add default deny for known information leak/priv esc paths
+-- 
+2.54.0
+
