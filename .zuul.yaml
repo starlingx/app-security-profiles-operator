@@ -7,6 +7,13 @@
         - k8sapp-security-profile-operator-pylint
         - k8sapp-security-profile-operator-flake8
         - k8sapp-security-profile-operator-metadata
+        - app-security-profiles-operator-tox-coverage
+        - app-security-profiles-operator-tox-security
+        - app-security-profiles-operator-tox-py313
+        - app-security-profiles-operator-tox-coverage-trixie
+        - app-security-profiles-operator-tox-security-trixie
+        - app-security-profiles-operator-tox-flake8-trixie
+        - app-security-profiles-operator-tox-pylint-trixie
     gate:
       jobs:
         - openstack-tox-linters
@@ -14,6 +21,13 @@
         - k8sapp-security-profile-operator-pylint
         - k8sapp-security-profile-operator-flake8
         - k8sapp-security-profile-operator-metadata
+        - app-security-profiles-operator-tox-coverage
+        - app-security-profiles-operator-tox-security
+        - app-security-profiles-operator-tox-py313
+        - app-security-profiles-operator-tox-coverage-trixie
+        - app-security-profiles-operator-tox-security-trixie
+        - app-security-profiles-operator-tox-flake8-trixie
+        - app-security-profiles-operator-tox-pylint-trixie
     post:
       jobs:
         - stx-security-profiles-operator-app-upload-git-mirror
@@ -35,6 +49,9 @@
       tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
       tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/upper-constraints.txt'
 
+# NOTE: A Trixie-specific metadata job is not needed because the metadata
+# test validates app metadata YAML structure which is Python-version agnostic.
+# It does not depend on Python runtime behavior that differs between 3.9/3.13.
 - job:
     name: k8sapp-security-profile-operator-metadata
     parent: tox
@@ -86,6 +103,116 @@
       tox_envlist: flake8
       tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
       tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/upper-constraints.txt'
+
+- job:
+    name: app-security-profiles-operator-tox-coverage
+    parent: tox
+    description: |
+            Run coverage analysis for app-security-profiles-operator
+    nodeset: debian-bullseye
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/utilities
+      - starlingx/root
+    vars:
+      tox_envlist: coverage
+    post-run: playbooks/upload-coverage-reports.yaml
+
+- job:
+    name: app-security-profiles-operator-tox-security
+    parent: tox
+    description: |
+            Run security analysis for app-security-profiles-operator
+    nodeset: debian-bullseye
+    required-projects:
+      - starlingx/root
+    vars:
+      tox_envlist: security
+    post-run: playbooks/upload-security-reports.yaml
+
+- job:
+    name: app-security-profiles-operator-tox-py313
+    parent: tox
+    description: |
+      Run py313 for app-security-profiles-operator
+    nodeset: debian-trixie-8GB
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/utilities
+      - starlingx/root
+    files:
+      - python3-k8sapp-security-profiles-operator/*
+    vars:
+      tox_envlist: py313
+      tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/trixie/upper-constraints.txt'
+
+- job:
+    name: app-security-profiles-operator-tox-coverage-trixie
+    parent: tox
+    description: |
+      Run coverage analysis for app-security-profiles-operator (Trixie)
+    nodeset: debian-trixie-8GB
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/utilities
+      - starlingx/root
+    vars:
+      tox_envlist: coverage-trixie
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/trixie/upper-constraints.txt'
+    post-run: playbooks/upload-coverage-reports.yaml
+
+- job:
+    name: app-security-profiles-operator-tox-security-trixie
+    parent: tox
+    description: |
+      Run security analysis for app-security-profiles-operator (Trixie)
+    nodeset: debian-trixie-8GB
+    required-projects:
+      - starlingx/root
+    vars:
+      tox_envlist: security-trixie
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/trixie/upper-constraints.txt'
+    post-run: playbooks/upload-security-reports.yaml
+
+- job:
+    name: app-security-profiles-operator-tox-flake8-trixie
+    parent: tox
+    description: |
+      Run flake8 test for app-security-profiles-operator (Trixie)
+    nodeset: debian-trixie-8GB
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/utilities
+      - starlingx/root
+    files:
+      - python3-k8sapp-security-profiles-operator/*
+    vars:
+      tox_envlist: flake8-trixie
+      tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/trixie/upper-constraints.txt'
+
+- job:
+    name: app-security-profiles-operator-tox-pylint-trixie
+    parent: tox
+    description: |
+      Run pylint test for app-security-profiles-operator (Trixie)
+    nodeset: debian-trixie-8GB
+    required-projects:
+      - starlingx/config
+      - starlingx/fault
+      - starlingx/utilities
+      - starlingx/root
+    files:
+      - python3-k8sapp-security-profiles-operator/*
+    vars:
+      tox_envlist: pylint-trixie
+      tox_extra_args: -c python3-k8sapp-security-profiles-operator/k8sapp_security_profiles_operator/tox.ini
+      tox_constraints_file: '{{ ansible_user_dir }}/src/opendev.org/starlingx/root/build-tools/requirements/debian/trixie/upper-constraints.txt'
 
 - job:
     name: stx-security-profiles-operator-app-upload-git-mirror

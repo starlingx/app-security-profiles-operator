@@ -1,2 +1,6 @@
 .tox
 venv/
+UTCoverage/
+__pycache__/
+*.pyc
+.coverage
