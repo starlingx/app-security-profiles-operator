@@ -90,15 +90,24 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
     def pre_downgrade(self, app_op, app, hook_info):
         """Prepare for downgrade by cleaning up CRDs, webhooks, and helm state.
 
-        Called from the 26.10 (source) plugin BEFORE the 26.03 (target) plugin
-        takes over. The securityprofilesoperatordaemons CRD is preserved to keep
-        the SPOD CR with its enableAppArmor configuration intact.
+        Called from the source release plugin BEFORE the target release plugin
+        takes over. All SPO CRDs are deleted, including
+        securityprofilesoperatordaemons: its schema belongs to the source chart
+        and is incompatible with the status the target release operator writes,
+        which would stall spod reconciliation. The target chart reinstalls every
+        CRD and recreates the SPOD CR with its own enableAppArmor and
+        imagePullSecrets values.
+
+        The operator Deployment is removed before the CRDs so that the running
+        reconciler cannot recreate a default SPOD CR in the window between CRD
+        reinstall and the target chart's own CR creation.
         """
         LOG.info("%s app: executing pre_downgrade" % app.name)
         self._cleanup_for_rollback()
-        self._patch_crds_for_rollback()
+        self._delete_operator_deployment()
         self._delete_webhook_deployment()
         self._delete_spod_resources()
+        self._delete_old_crds()
 
     def _upgrade_crds_if_needed(self, app):
         """Handle CRD replacement for both upgrade and rollback directions.
@@ -122,6 +131,7 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         try:
             if incompatibility == 'rollback':
                 self._cleanup_for_rollback()
+            self._delete_operator_deployment()
             self._delete_webhook_deployment()
             self._delete_old_crds()
             self._apply_new_crds(crds_file)
@@ -305,6 +315,28 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
                 os.remove(crds_tmpfile.name)
             return None
 
+    def _delete_operator_deployment(self):
+        """Delete the operator Deployment before replacing SPO CRDs.
+
+        The operator reconciles securityprofilesoperatordaemons and creates a
+        default SPOD CR as soon as the CRD exists. If it is left running while
+        CRDs are replaced it wins the race against the chart and installs a CR
+        that carries neither enableAppArmor nor imagePullSecrets, which makes
+        the chart's own CR creation fail with "already exists" and leaves spod
+        unable to pull from the authenticated local registry. The subsequent
+        helm install recreates this Deployment.
+        """
+        cmd = [
+            'kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
+            'delete', 'deployment',
+            app_constants.HELM_CHART_SECURITY_PROFILES_OPERATOR,
+            '-n', app_constants.HELM_NS_SECURITY_PROFILES_OPERATOR,
+            '--ignore-not-found=true'
+        ]
+        stdout, stderr = cutils.execute(*cmd)
+        LOG.info("%s: delete operator deployment: %s %s" %
+                 (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR, stdout, stderr))
+
     def _delete_webhook_deployment(self):
         """Delete the webhook deployment so the operator recreates it with correct image.
 
@@ -337,62 +369,6 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         stdout, stderr = cutils.execute(*cmd)
         LOG.info("%s: delete spod daemonset: %s %s" %
                  (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR, stdout, stderr))
-
-    def _patch_crds_for_rollback(self):
-        """Delete most SPO CRDs but preserve securityprofilesoperatordaemons.
-
-        The securityprofilesoperatordaemons CRD holds the SPOD CR which contains
-        enableAppArmor config. Deleting it causes the operator to recreate the
-        spod without privileged access, leading to crashes. We patch it to remove
-        the conversion webhook and keep the CR intact.
-        """
-        LOG.info("%s: Handling CRDs for rollback" %
-                 app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR)
-
-        spod_crd = 'securityprofilesoperatordaemons.security-profiles-operator.x-k8s.io'
-
-        cmd = [
-            'kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
-            'get', 'crds', '-o', 'name'
-        ]
-        try:
-            stdout, _ = cutils.execute(*cmd)
-        except Exception:
-            return
-
-        if not stdout:
-            return
-
-        spo_crds = [crd.replace('customresourcedefinition.apiextensions.k8s.io/', '')
-                    for crd in stdout.strip().split('\n')
-                    if SPO_CRD_GROUP in crd]
-
-        for crd_name in spo_crds:
-            if crd_name == spod_crd:
-                patch = '{"spec":{"conversion":{"strategy":"None","webhook":null}}}'
-                cmd = [
-                    'kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
-                    'patch', 'crd', crd_name,
-                    '--type=merge', '-p', patch
-                ]
-                try:
-                    stdout, stderr = cutils.execute(*cmd)
-                    LOG.info("%s: patch CRD %s (preserve SPOD CR): %s %s" %
-                             (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR,
-                              crd_name, stdout, stderr))
-                except Exception as e:
-                    LOG.warning("%s: failed to patch CRD %s: %s" %
-                                (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR,
-                                 crd_name, e))
-            else:
-                cmd = [
-                    'kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
-                    'delete', 'crd', crd_name, '--ignore-not-found=true'
-                ]
-                stdout, stderr = cutils.execute(*cmd)
-                LOG.info("%s: delete CRD %s: %s %s" %
-                         (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR,
-                          crd_name, stdout, stderr))
 
     def _delete_old_crds(self):
         """Delete all SPO CRDs discovered dynamically."""

@@ -605,22 +605,28 @@ class TestPreDowngrade(unittest.TestCase):
     def setUp(self):
         self.operator = SPOLifecycle.__new__(SPOLifecycle)
 
+    @mock.patch.object(SPOLifecycle, '_delete_old_crds')
     @mock.patch.object(SPOLifecycle, '_delete_spod_resources')
     @mock.patch.object(SPOLifecycle, '_delete_webhook_deployment')
-    @mock.patch.object(SPOLifecycle, '_patch_crds_for_rollback')
+    @mock.patch.object(SPOLifecycle, '_delete_operator_deployment')
     @mock.patch.object(SPOLifecycle, '_cleanup_for_rollback')
     def test_pre_downgrade_calls_cleanup(self, mock_cleanup,
-                                          mock_patch, mock_wh,
-                                          mock_spod):
-        """Verify pre_downgrade calls cleanup methods."""
+                                         mock_operator, mock_wh,
+                                         mock_spod, mock_crds):
+        """Verify pre_downgrade calls cleanup methods.
+
+        The operator Deployment must be deleted before the CRDs, so the
+        reconciler cannot recreate a default SPOD CR against the old schema.
+        """
         app_op = mock.MagicMock()
         app = mock.MagicMock()
         hook_info = mock.MagicMock()
         self.operator.pre_downgrade(app_op, app, hook_info)
         mock_cleanup.assert_called_once()
-        mock_patch.assert_called_once()
+        mock_operator.assert_called_once()
         mock_wh.assert_called_once()
         mock_spod.assert_called_once()
+        mock_crds.assert_called_once()
 
 
 class TestUpgradeCrdsIfNeeded(unittest.TestCase):
@@ -918,39 +924,6 @@ class TestTargetChartHasV1Crds(unittest.TestCase):
         app.inst_charts_dir = '/tmp/charts'
         result = self.operator._target_chart_has_v1_crds(app)
         self.assertFalse(result)
-
-
-class TestPatchCrdsForRollback(unittest.TestCase):
-    """Tests for _patch_crds_for_rollback."""
-
-    def setUp(self):
-        self.operator = SPOLifecycle.__new__(SPOLifecycle)
-
-    @mock.patch('k8sapp_security_profiles_operator.lifecycle.lifecycle_security_profiles_operator.cutils.execute',
-                side_effect=Exception('failed'))
-    def test_handles_get_crds_failure(self, mock_exec):
-        """Verify handles kubectl get crds failure."""
-        self.operator._patch_crds_for_rollback()
-
-    @mock.patch('k8sapp_security_profiles_operator.lifecycle.lifecycle_security_profiles_operator.cutils.execute',
-                return_value=('', ''))
-    def test_empty_crds_returns(self, mock_exec):
-        """Verify returns when no CRDs found."""
-        self.operator._patch_crds_for_rollback()
-
-    @mock.patch('k8sapp_security_profiles_operator.lifecycle.lifecycle_security_profiles_operator.cutils.execute')
-    def test_preserves_spod_crd(self, mock_exec):
-        """Verify spod CRD is patched not deleted."""
-        mock_exec.return_value = (
-            'customresourcedefinition.apiextensions.k8s.io/'
-            'securityprofilesoperatordaemons.security-profiles-operator.x-k8s.io\n'
-            'customresourcedefinition.apiextensions.k8s.io/'
-            'apparmorprofiles.security-profiles-operator.x-k8s.io\n',
-            ''
-        )
-        self.operator._patch_crds_for_rollback()
-        # Should have been called: get crds, patch spod, delete other
-        self.assertTrue(mock_exec.call_count >= 3)
 
 
 class TestTargetChartHasV1CrdsDetailed(unittest.TestCase):
