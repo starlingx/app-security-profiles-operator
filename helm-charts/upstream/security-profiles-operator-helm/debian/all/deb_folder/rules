@@ -23,8 +23,10 @@ override_dh_auto_build:
 	mv deploy/helm/* security-profiles-operator/
 	rm -rf deploy
 
-	#Copy config.yaml to templates
-	cp debian/patches/config.yaml security-profiles-operator/templates
+	# The lifecycle plugin owns the SPOD CR. Drop the chart's own copy so
+	# helm does not race the operator to create it, which fails the release
+	# with 'securityprofilesoperatordaemons "spod" already exists'.
+	rm -f security-profiles-operator/templates/config.yaml
 
 	# Create the TGZ file.
 	make CHART_VERSION=$(CHART_VERSION) security-profiles-operator

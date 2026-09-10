@@ -12,6 +12,7 @@ import glob
 import os
 import tarfile
 import tempfile
+import time
 
 from k8sapp_security_profiles_operator.common import constants as app_constants
 from oslo_log import log as logging
@@ -28,6 +29,19 @@ LOG = logging.getLogger(__name__)
 
 # CRD group suffix for security-profiles-operator
 SPO_CRD_GROUP = 'security-profiles-operator.x-k8s.io'
+
+# The SPOD CR is created by the operator at startup, not by the chart
+SPOD_CR_KIND = 'securityprofilesoperatordaemons.' + SPO_CRD_GROUP
+SPOD_CR_NAME = 'spod'
+
+# Name of the Kubernetes Secret holding credentials for the authenticated
+# local registry. This is a resource name, not a credential, so the bandit
+# hardcoded-password check is suppressed.
+LOCAL_REGISTRY_SECRET = 'default-registry-key'  # nosec B105
+
+# Bounded wait for the SPOD CRD to be installed by the chart
+SPOD_CRD_WAIT_ATTEMPTS = 30
+SPOD_CRD_WAIT_INTERVAL = 2
 
 
 class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
@@ -437,6 +451,10 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         dbapi_instance = app_op._dbapi
         db_app_id = dbapi_instance.kube_app_get(app.name).id
 
+        # The chart does not create the SPOD CR, the operator does. Apply the
+        # StarlingX specific fields to it before anything depends on them.
+        self._ensure_spod_config(dbapi_instance, db_app_id)
+
         client_core = app_op._kube._get_kubernetesclient_core()
         component_constant = app_constants.HELM_COMPONENT_LABEL_SPO
 
@@ -510,6 +528,149 @@ class SecurityProfilesOperatorAppLifecycleOperator(base.AppLifecycleOperator):
         cmd = ['sed', '-i', '/security-profiles-operator.yaml/s/^#//g', kust_file]
         stdout, stderr = cutils.trycmd(*cmd)
         LOG.debug("{} app: post_remove cmd={} stdout={} stderr={}".format(app.name, cmd, stdout, stderr))
+
+    def _get_spod_storage_version(self):
+        """Return the storage version of the SPOD CRD, or None if unavailable.
+
+        The served version differs between releases, v1alpha1 on SPO 0.8.x and
+        v1 on 1.0.x, so it has to be resolved at runtime rather than hardcoded.
+        """
+        cmd = [
+            'kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
+            'get', 'crd', SPOD_CR_KIND,
+            '-o', 'jsonpath={.spec.versions[?(@.storage==true)].name}'
+        ]
+        for _ in range(SPOD_CRD_WAIT_ATTEMPTS):
+            try:
+                stdout, _stderr = cutils.execute(*cmd)
+                if stdout and stdout.strip():
+                    return stdout.strip()
+            except Exception:
+                pass
+            time.sleep(SPOD_CRD_WAIT_INTERVAL)
+        return None
+
+    def _ensure_spod_config(self, dbapi_instance, db_app_id):
+        """Create or update the SPOD CR with the StarlingX specific fields.
+
+        The chart does not ship the SPOD CR. A chart copy races the operator,
+        which creates a default CR of its own during startup, and the loser of
+        that race fails the helm install with
+        'securityprofilesoperatordaemons "spod" already exists'.
+
+        The operator only creates the CR at startup, never while it is already
+        running, so this cannot assume a CR is present to patch. Use apply so
+        the CR is created when absent and updated when the operator got there
+        first. Apply is a three way merge, so fields the operator or the CRD
+        defaults contributed are preserved.
+
+        Without imagePullSecrets the spod DaemonSet and the webhook Deployment
+        cannot pull from the authenticated local registry, because both use
+        imagePullPolicy Always, and enableAppArmor defaults to false. The
+        operator re-renders both when the CR changes, so the settings converge.
+        """
+        version = self._get_spod_storage_version()
+        if not version:
+            LOG.error("%s: SPOD CRD not available, cannot configure %s" %
+                      (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR, SPOD_CR_NAME))
+            return
+
+        enable_apparmor = True
+        overrides = self._get_helm_user_overrides(dbapi_instance, db_app_id)
+        if overrides:
+            try:
+                parsed = yaml.safe_load(overrides) or {}
+                if 'enableAppArmor' in parsed:
+                    enable_apparmor = bool(parsed['enableAppArmor'])
+            except Exception as e:
+                LOG.warning("%s: could not parse user overrides, "
+                            "defaulting enableAppArmor to True: %s" %
+                            (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR, e))
+
+        manifest = {
+            'apiVersion': '%s/%s' % (SPO_CRD_GROUP, version),
+            'kind': 'SecurityProfilesOperatorDaemon',
+            'metadata': {
+                'name': SPOD_CR_NAME,
+                'namespace': app_constants.HELM_NS_SECURITY_PROFILES_OPERATOR,
+                'labels': {'app': app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR},
+            },
+            'spec': {
+                'enableAppArmor': enable_apparmor,
+                'imagePullSecrets': [{'name': LOCAL_REGISTRY_SECRET}],
+                # Own scheduling explicitly. Apply is a three way merge, so a CR
+                # the operator created first keeps the control-plane tolerations
+                # in its default, which would schedule spod onto controllers
+                # where AppArmor is disabled. The chart CR this replaces set
+                # none. See _spod_scheduling for why an explicit non-empty
+                # tolerations list is required rather than an empty one.
+                'scheduling': self._spod_scheduling(dbapi_instance),
+            },
+        }
+
+        tmpfile = tempfile.NamedTemporaryFile(
+            prefix='spod-cr-', suffix='.yaml', mode='w', delete=False)
+        try:
+            yaml.safe_dump(manifest, tmpfile)
+            tmpfile.close()
+            cmd = [
+                'kubectl', '--kubeconfig', kubernetes.KUBERNETES_ADMIN_CONF,
+                'apply', '-f', tmpfile.name
+            ]
+            stdout, stderr = cutils.execute(*cmd)
+            LOG.info("%s: apply SPOD CR %s (enableAppArmor=%s): %s %s" %
+                     (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR,
+                      version, enable_apparmor, stdout, stderr))
+        except Exception as e:
+            LOG.error("%s: failed to apply SPOD CR: %s" %
+                      (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR, e))
+        finally:
+            if os.path.exists(tmpfile.name):
+                os.remove(tmpfile.name)
+
+    def _spod_scheduling(self, dbapi_instance):
+        """Return the scheduling block for the SPOD CR.
+
+        An empty tolerations list does not achieve the goal of keeping spod off
+        the controllers. The operator treats an empty list as unset and injects
+        its default tolerations, which include node-role.kubernetes.io/control-plane,
+        into the DaemonSet. spod then tolerates the control-plane NoSchedule
+        taint and lands on the controllers, where it fails on Standard systems
+        because AppArmor is disabled there.
+
+        Set an explicit non-empty tolerations list that deliberately omits the
+        control-plane toleration, so spod is repelled from the controllers by
+        their NoSchedule taint. The operator honours a non-empty list.
+
+        On All-in-one systems the controllers are also the workers and carry the
+        control-plane taint, so spod must run on them: keep the control-plane
+        (and master) tolerations there.
+        """
+        tolerations = [
+            {'key': 'node.kubernetes.io/not-ready',
+             'operator': 'Exists', 'effect': 'NoExecute'},
+        ]
+
+        try:
+            system_type = dbapi_instance.isystem_get_one().system_type
+        except Exception as e:
+            # Fail safe: if the system type cannot be determined, keep the
+            # previous behaviour of tolerating the control-plane taint rather
+            # than risk repelling spod from every node.
+            LOG.warning("%s: could not read system_type, tolerating "
+                        "control-plane for spod: %s" %
+                        (app_constants.HELM_APP_SECURITY_PROFILES_OPERATOR, e))
+            system_type = constants.TIS_AIO_BUILD
+
+        if system_type == constants.TIS_AIO_BUILD:
+            tolerations.append(
+                {'key': 'node-role.kubernetes.io/control-plane',
+                 'operator': 'Exists', 'effect': 'NoSchedule'})
+            tolerations.append(
+                {'key': 'node-role.kubernetes.io/master',
+                 'operator': 'Exists', 'effect': 'NoSchedule'})
+
+        return {'tolerations': tolerations}
 
     def _get_helm_user_overrides(self, dbapi_instance, db_app_id):
         try:
