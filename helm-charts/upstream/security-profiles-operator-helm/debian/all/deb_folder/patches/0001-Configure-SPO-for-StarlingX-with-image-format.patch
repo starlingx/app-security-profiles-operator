@@ -7,9 +7,9 @@ Signed-off-by: cchavesd <CaioRodrigo.ChavesdosSantos@windriver.com>
 ---
  deploy/helm/templates/_helpers.tpl          |  2 --
  deploy/helm/templates/deployment.yaml       | 66 +++++++++++++++++----------------------
- deploy/helm/templates/static-resources.yaml |  2 ++
+ deploy/helm/templates/static-resources.yaml |  4 ++++
  deploy/helm/values.yaml                     | 10 +++---
- 4 files changed, 35 insertions(+), 45 deletions(-)
+ 4 files changed, 37 insertions(+), 45 deletions(-)
 
 diff --git a/deploy/helm/templates/_helpers.tpl b/deploy/helm/templates/_helpers.tpl
 index ee6dbdc..7bf3a99 100644
@@ -159,7 +159,23 @@ diff --git a/deploy/helm/templates/static-resources.yaml b/deploy/helm/templates
 index c64fcef..7354254 100644
 --- a/deploy/helm/templates/static-resources.yaml
 +++ b/deploy/helm/templates/static-resources.yaml
-@@ -1089,6 +1089,8 @@ data:
+@@ -751,6 +751,7 @@
+             "epoll_ctl",
+             "epoll_pwait",
+             "epoll_wait",
++            "eventfd",
+             "eventfd2",
+             "execve",
+             "faccessat2",
+@@ -911,6 +912,7 @@
+             "epoll_create1",
+             "epoll_ctl",
+             "epoll_pwait",
++            "eventfd",
+             "eventfd2",
+             "execve",
+             "exit_group",
+@@ -1089,6 +1091,8 @@ data:
            - /var/run/secrets/metrics/**
            - /sys/module/apparmor/parameters/enabled
            - /sys/devices/system/cpu/possible
